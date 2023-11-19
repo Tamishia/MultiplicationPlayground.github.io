@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Kdam+Thmor+Pro&display=swap" rel="stylesheet">
+	
+    <title>Multiplication Playground</title>
+	
+	<style>
+		body {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			height: 100vh;
+			margin: 0;
+			text-align: center;
+			background-color: #1eb7bc;
+			font-family: 'Kdam Thmor Pro', sans-serif;
+		}
+		
+		.equationContainer{
+            border: 1px;
+			padding: 50px;
+            text-align: center;
+			width: 40%;
+			border-collapse: collapse;
+			flex: 1; 
+        }
+		#equation {
+			font-size: 50px;
+		}
+		
+		#showpercentage{
+            border: 1px;
+			padding: 1px;
+            text-align: center;
+			border-collapse: collapse;
+			display: none; /* Initially hide the textarea */
+			margin: auto; /* Add this line to center horizontally */
+		}
+		
+		#checkans,
+		#next,
+		#stats,
+		#percentageScoreBtn		{
+			background-color: #003049;
+			color: #fff; /* Set font color to white */
+			padding: 10px 20px;
+			font-size: 16px;
+			border: none;
+			cursor: pointer;
+			margin-top: 10px;
+			transition: background-color 0.3s ease, color 0.3s ease;
+		}
+		
+		#checkans:hover,
+		#next:hover,
+		#stats:hover,
+		#percentageScoreBtn:hover {
+			background-color: #ee8959;
+			color: #fff;
+		}
+		
+		#ans1{
+		height:30px;
+		width:260px;
+		}
+		
+		#ans1 {
+			border-radius: 60px;
+			background-color: #e2eafc;
+		}
+		
+    </style>
+</head>
+<body>
+    <!-- Play Area -->
+    <div id="playArea">
+        <h1>Game Area</h1>
+		<h2>Currently Player: <span id="currentlyPlaying"></span></h2> <!--Display the current player's name-->
+            <div id="equationcontainer">
+                <div class="hide">
+                    <div id="equation">0</div> <br>
+                    <input type="text" id="ans1" name="ans1" placeholder="Your Answer here" required>
+					<button id="checkans" type="button" onclick="CheckAnswer()">Check Answer</button>
+					<button id="next" type="button">Next</button> &nbsp; &nbsp;  &nbsp; &nbsp; <button id="stats" type="button">end</button>
+                    <br>
+                
+				</div>
+			</div>
+			<br>
+		<button id="percentageScoreBtn" type="button" onclick="findPercentageScore()">Percentage Score</button> 	
+		<h3>Player Percentage</h3>
+		<textarea id="showpercentage" rows="6" cols="40" readonly></textarea>
+		<h3>All Players Stats</h3>
+		<textarea id="showallplayers" rows="10" cols="160" readonly></textarea>
+    </div>
+
+    <script>
+	let PlayerRegistrationData = []; //declaring the PlayerRegistrationData array
+	
+		// Declare a single array to store data for all players
+        let playerData = [];
+		
+		//declaring variables to store player details
+		let playerName;
+		let age;
+		
+		let next_btn;
+		let end_btn;
+		
+		//declaring variables to for the game
+		let totalQuestions = 0; // Total number of questions
+		let tally = 0; // Initialize tally to track score
+		let incorrect = 0; // initialize variable to track incorrect score
+		let currentPercentageScore = 0;
+		
+		document.addEventListener("DOMContentLoaded", function () {
+			// Retrieve player's name and age from sessionStorage
+			playerName = sessionStorage.getItem('playerName');
+			age = sessionStorage.getItem('age');
+			
+			// Debugging statements
+			console.log("Player Name:", playerName);
+			console.log("Age:", age);
+				
+			// Update player's name in the HTML content
+			document.getElementById('currentlyPlaying').innerText = playerName;
+		
+			function getFormattedDate() {
+				const currentDate = new Date();
+				return currentDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
+			}
+		
+			// Set the formatted date in a global variable
+			formattedDate = getFormattedDate();
+		});
+		
+		window.onload = function () {
+			next_btn = document.getElementById("next"); //next button variable thats takes the id of the next button
+			end_btn = document.getElementById("stats"); //end button variable thats takes the id of the next button
+			
+			//Setting the initial state for relevant buttons			
+			next_btn.disabled = true; //next button disabled until needed	
+		
+			// Check if the page should automatically start the game
+			const startAutomatically = window.location.href.includes('?start=true');
+			
+
+			// Call PlayGame function if startAutomatically is true
+			if (startAutomatically) {
+				PlayGame();
+			}
+			
+			playerName = sessionStorage.getItem('playerName'); // Retrieve player's name from sessionStorage
+			age = sessionStorage.getItem('age'); // Retrieve player's age from sessionStorage
+			
+			//next button when clicked calls the playgame function - retrieves the next equation
+			next_btn.onclick = function(){
+				PlayGame();
+				document.getElementById("ans1").value = ""; //clears the input field so user can answer the next question
+			}
+			
+			//end_btn when clicked calls findpercentagescore,showAllStats function and disables other buttons
+			end_btn.onclick = function(){
+				alert("Game has ended! You will be directed to your overall score."); //inform player that game has ended
+										
+					next_btn.disabled = true; //Disable the buttons
+					end_btn.disabled = true;  //Disable the buttons
+					
+					document.getElementById("ans1").disabled = true; // Disable the answer input
+					document.getElementById("checkans").disabled = true; // Disable the "Check Answer" button
+					document.getElementById("ans1").value = ""; //Clear the answer input field
+									
+					document.getElementById("equation").innerHTML = ""; //clears the equation once the user clicks end button
+					
+					// Call findPercentageScore() and pass necessary data as URL parameters to results.html
+					window.location.href = `results.html?correctAnswers=${tally}&totalQuestions=${totalQuestions}&incorrect=${incorrect}`;
+				}
+		}
+
+		//play game  function
+		function PlayGame() {
+			//generates random numbers for x,y variables
+			let x = Math.floor(Math.random() * 9) + 1; //generates random numbers between 1 and 9 for x variable
+			let y = Math.floor(Math.random() * 5) + 1; //generates random numbers between 1 and 9 for y variable
+				
+			let equation1 = `${x} x ${y} = ?`; //equation created from the random numbers that will be displayed to the user
+			let product = x * y; //Calculates the answers for the equations and store it in the product variables
+			
+			console.log(`Question answer: ${product}`); //for debugging and checking the answer inthe console
+
+			document.getElementById("equation").innerHTML = equation1; //displaying the equations to the user
+			document.getElementById("ans1").disabled = false; // Enable the answer input for user to enter their answer
+			document.getElementById("checkans").disabled = false; // Enable the "Check Answer" button so user can check their answer
+							
+			next_btn.disabled = true; // Disabling the "Next" button after displaying the question
+							
+			let check_ans_btn = document.getElementById("checkans"); //assigning the check answer id to a variable
+			
+			check_ans_btn.onclick = function(){ //calling the check answer fucntion when clicked.
+				CheckAnswer(parseInt(document.getElementById("ans1").value), product, equation1);
+			}				
+			
+			document.getElementById("checkans").onclick = function() { // Retrieves the user's answer when the Check Answer button is clicked
+				
+				let question_ans = parseInt(document.getElementById("ans1").value); // Collects the user's answer form the input field and convert it to an integer
+
+					//passing the Question_ans,product and equation1 in an argument to the parameter of the function giving it the values of the varibales
+					CheckAnswer(question_ans, product, equation1); // CheckAnswer function checks if if user's answer is correct for the given equation
+					 
+					console.log(`User got ${tally} questions correct`); //console logging the tally of how many answers the user got correct
+					 
+					console.log(`User got ${incorrect} question(s) correct`); //console logging the tally of how many answers the user got incorrect
+					 
+					document.getElementById("ans1").disabled = true; // Disable the answer input
+					document.getElementById("checkans").disabled = true; // Disable the "Check Answer" button
+					next_btn.disabled = false; // Enabling the Next button for user to click to get the next equation.
+					
+					// Storing values in sessionStorage
+					sessionStorage.setItem('tally', tally);
+					sessionStorage.setItem('totalQuestions', totalQuestions);
+					sessionStorage.setItem('incorrect', incorrect);
+				};  
+				
+				totalQuestions++; //Keeping track of the total equations the user answers
+				
+		} 
+
+		//checkanswer function that validates the user's answers and tells how many they got correct
+		function CheckAnswer(question_ans, product, equation) {
+
+			//if statement that adds one to tally if they get the answer correct and tells them what they got incorrect if they got any wrong
+			if (question_ans === product) {
+				tally++;
+				alert(`CORRECT: (${question_ans}) is the answer`); // If the user's answer is correct, display the alert to say it is correct + increase the tally by 1
+				}
+
+			else {
+				alert(`Your answer (${question_ans}) is incorrect. ${product} is the answer.`); // If the user's answer is incorrect, display the alert and show the correct answer + increase the incorrect tally by 1
+				incorrect++;
+			}
+			
+			// Calculate the current percentage score
+            currentPercentageScore = (tally / totalQuestions) * 100;
+
+            // Update the display of the current percentage score
+            document.getElementById("showallplayers").value = currentPercentageScore.toFixed(2);
+            
+			//adding the question,user answers, tally of correct and incorrect answers to the array
+			PlayerRegistrationData.push({
+				playerName: playerName,
+				age: age,
+				date: formattedDate,
+				currentScore: currentPercentageScore,
+				question: equation,
+				userAnswer: question_ans,
+				correctAnswers: tally,
+				incorrectAnswers: incorrect
+			});
+			console.log(PlayerRegistrationData); // tracking and debugging in the console
+			showAllStats();
+		}
+
+		function showAllStats() {
+			const showAllPlayersTextArea = document.getElementById("showallplayers");
+			showAllPlayersTextArea.value = "";
+
+			for (let i = 0; i < PlayerRegistrationData.length; i++) {
+				const entry = PlayerRegistrationData[i];
+				const formattedStats = `Username: ${entry.playerName}, Age: ${entry.age}, Date: ${entry.date}, Score: ${entry.currentScore.toFixed(2)}%, Question: ${entry.question}, User's Answer: ${entry.userAnswer}, Total Correct Answers: ${entry.correctAnswers}, Total Incorrect Answers: ${entry.incorrectAnswers}`;
+				showAllPlayersTextArea.value += formattedStats + "\n";
+			}
+		}
+		
+		// Function to find the percentage score and update the textarea with player's details
+        function findPercentageScore() {
+            const showPercentageTextArea = document.getElementById("showpercentage");
+
+			// Calculate the current percentage score
+			const currentPercentageScore = ((tally / totalQuestions) * 100).toFixed(2);
+
+			// Get the current date
+			const currentDate = new Date();
+			// Format the current date to a string
+			const formattedDate = currentDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
+
+			// Display overall stats in the textarea
+			const overallStats = `Username: ${playerName}\nDate: ${formattedDate}\nScore: ${currentPercentageScore}%\nTotal Questions: ${totalQuestions}\nCorrect Answers: ${tally}\nIncorrect Equations: ${incorrect}`;
+			showPercentageTextArea.value = overallStats;
+			
+			// Show the textarea
+            showPercentageTextArea.style.display = "block";
+    
+        }
+					
+    </script>
+</body>
+</html>

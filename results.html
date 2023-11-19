@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link href="https://fonts.googleapis.com/css2?family=Kdam+Thmor+Pro&display=swap" rel="stylesheet">
+    <title>Game - Results</title>
+	
+	<style>
+		body {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			height: 100vh;
+			margin: 0;
+			text-align: center;
+			flex-direction: column;
+			background-color:#b7e4c7;
+			font-family: 'Kdam Thmor Pro', sans-serif;
+		}
+		
+		#showpercentage{
+            border: 1px;
+			padding: 1px;
+            text-align: center;
+			border-collapse: collapse;
+		}
+		
+		#showallplayers-container{
+            border: 1px;
+			padding: 1px;
+            text-align: center;
+			border-collapse: collapse;
+		}
+
+		#stats{
+			background-color: #3498db;
+			color: #fff; /* Set font color to white */
+			padding: 10px 20px;
+			font-size: 16px;
+			border: none;
+			cursor: pointer;
+			margin-top: 10px;
+			transition: background-color 0.3s ease, color 0.3s ease;
+		}
+		
+		#stats:hover {
+			background-color: #ff0a54;
+			color: #fff;
+		}
+    </style>
+</head>
+<body>
+	<div id="resultsArea">
+		<button id="stats" type="button" onclick="goBack()">Back to Main</button>
+		<h1>Results for <span id="player-name"> </span></h1>
+		
+		<h3><span id="currentlyPlaying"></span> Overall Stats</h3>
+
+			<textarea id="showpercentage" rows="6" cols="50" readonly></textarea>
+	</div>
+	
+<script>
+	// Declare playerName in the global scope
+	var playerName;
+	
+	document.addEventListener("DOMContentLoaded", function () {
+        // Retrieve player's name from sessionStorage
+        playerName = sessionStorage.getItem('playerName');
+
+        // Update player's name in the HTML content
+        document.getElementById('currentlyPlaying').innerText = playerName;
+		
+		// Call FindPercentageScore function on page load - after redirected from the END button
+        findPercentageScore();
+		});
+		
+		// Function to go back to the main game page
+        function goBack() {
+            window.location.href = "index.html";
+        }
+		
+		// Function to find the percentage score and update the textarea with player's details
+		function findPercentageScore() {
+			const showPercentageTextArea = document.getElementById("showpercentage");
+
+			// Retrieve information from sessionStorage or URL parameters
+			const tally = sessionStorage.getItem('tally'); // Assuming you stored tally in sessionStorage in play.html
+			const totalQuestions = sessionStorage.getItem('totalQuestions'); // Assuming you stored totalQuestions in sessionStorage in play.html
+			const incorrect = sessionStorage.getItem('incorrect'); // Assuming you stored incorrect in sessionStorage in play.html
+
+			// Calculate the current percentage score
+			const currentPercentageScore = ((tally / totalQuestions) * 100).toFixed(2);
+
+			// Get the current date
+			const currentDate = new Date();
+			// Format the current date to a string
+			const formattedDate = currentDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
+
+			// Display overall stats in the textarea
+			const overallStats = `Username: ${playerName}\nDate: ${formattedDate}\nScore: ${currentPercentageScore}%\nTotal Questions: ${totalQuestions}\nCorrect Answers: ${tally}\nIncorrect Equations: ${incorrect}`;
+			showPercentageTextArea.value = overallStats;
+    
+        }
+
+</script>
+</body>
+</html>
