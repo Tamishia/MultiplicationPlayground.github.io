@@ -40,6 +40,15 @@
 			margin: auto; /* Add this line to center horizontally */
 		}
 		
+		#checkans:disabled,
+		#next:disabled{
+			color: #333;
+			cursor: not-allowed;
+			background-color: #5c6b73;
+		}
+		
+		
+		
 		#checkans,
 		#next,
 		#stats,
@@ -54,17 +63,20 @@
 			transition: background-color 0.3s ease, color 0.3s ease;
 		}
 		
-		#checkans:hover,
-		#next:hover,
-		#stats:hover,
-		#percentageScoreBtn:hover {
+		#checkans:not(:disabled):hover,
+		#next:not(:disabled):hover,
+		#stats:not(:disabled):hover,
+		#percentageScoreBtn:not(:disabled):hover {
 			background-color: #ee8959;
 			color: #fff;
+			border-radius: 60px;
 		}
 		
 		#ans1{
 		height:30px;
 		width:260px;
+		text-align: center;
+		font-size: 16px;
 		}
 		
 		#ans1 {
@@ -94,7 +106,7 @@
 		<h3>Player Percentage</h3>
 		<textarea id="showpercentage" rows="6" cols="40" readonly></textarea>
 		<h3>All Players Stats</h3>
-		<textarea id="showallplayers" rows="10" cols="160" readonly></textarea>
+		<textarea id="showallplayers" rows="8" cols="160" readonly></textarea>
     </div>
 
     <script>
@@ -106,6 +118,7 @@
 		//declaring variables to store player details
 		let playerName;
 		let age;
+		let usergender;
 		
 		let next_btn;
 		let end_btn;
@@ -120,6 +133,8 @@
 			// Retrieve player's name and age from sessionStorage
 			playerName = sessionStorage.getItem('playerName');
 			age = sessionStorage.getItem('age');
+			usergender = sessionStorage.getItem('usergender');
+			
 			
 			// Debugging statements
 			console.log("Player Name:", playerName);
@@ -171,14 +186,33 @@
 					
 					document.getElementById("ans1").disabled = true; // Disable the answer input
 					document.getElementById("checkans").disabled = true; // Disable the "Check Answer" button
-					document.getElementById("ans1").value = ""; //Clear the answer input field
-									
+					document.getElementById("ans1").value = ""; //Clear the answer input field									
 					document.getElementById("equation").innerHTML = ""; //clears the equation once the user clicks end button
+					
+					saveDataToLocalStorage();  // Save data before redirecting
 					
 					// Call findPercentageScore() and pass necessary data as URL parameters to results.html
 					window.location.href = `results.html?correctAnswers=${tally}&totalQuestions=${totalQuestions}&incorrect=${incorrect}`;
 				}
 		}
+		
+		// Save data to localStorage when the game ends
+		function saveDataToLocalStorage() {
+			localStorage.setItem('PlayerRegistrationData', JSON.stringify(PlayerRegistrationData));
+		}
+
+		// Load data from localStorage when the page loads
+		function loadDataFromLocalStorage() {
+			const storedData = localStorage.getItem('PlayerRegistrationData');
+			if (storedData) {
+				PlayerRegistrationData = JSON.parse(storedData);
+			}
+		}
+
+		// Call loadDataFromLocalStorage on page load
+		document.addEventListener('DOMContentLoaded', function () {
+			loadDataFromLocalStorage();
+		});
 
 		//play game  function
 		function PlayGame() {
@@ -207,12 +241,15 @@
 				
 				let question_ans = parseInt(document.getElementById("ans1").value); // Collects the user's answer form the input field and convert it to an integer
 
+				// Check if the answer input is empty
+				if (!isNaN(question_ans)) { // check if the input is a number
+	
 					//passing the Question_ans,product and equation1 in an argument to the parameter of the function giving it the values of the varibales
 					CheckAnswer(question_ans, product, equation1); // CheckAnswer function checks if if user's answer is correct for the given equation
 					 
 					console.log(`User got ${tally} questions correct`); //console logging the tally of how many answers the user got correct
 					 
-					console.log(`User got ${incorrect} question(s) correct`); //console logging the tally of how many answers the user got incorrect
+					console.log(`User got ${incorrect} question(s) incorrect`); //console logging the tally of how many answers the user got incorrect
 					 
 					document.getElementById("ans1").disabled = true; // Disable the answer input
 					document.getElementById("checkans").disabled = true; // Disable the "Check Answer" button
@@ -222,6 +259,13 @@
 					sessionStorage.setItem('tally', tally);
 					sessionStorage.setItem('totalQuestions', totalQuestions);
 					sessionStorage.setItem('incorrect', incorrect);
+					sessionStorage.setItem('playerName', playerName);
+					sessionStorage.setItem('usergender', usergender);
+					sessionStorage.setItem('currentScore', currentPercentageScore);
+					
+				} else {
+					alert("Please enter a valid answer before checking.");
+				}
 				};  
 				
 				totalQuestions++; //Keeping track of the total equations the user answers
@@ -252,6 +296,7 @@
 			PlayerRegistrationData.push({
 				playerName: playerName,
 				age: age,
+				gender: usergender,
 				date: formattedDate,
 				currentScore: currentPercentageScore,
 				question: equation,

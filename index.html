@@ -41,68 +41,73 @@
 		font-family: 'Kdam Thmor Pro', sans-serif;
 		font-size: 50px;
 		color:#fae0e4;
+		margin: 0
+		}
+		
+		#workout {
+		font-family: 'Kdam Thmor Pro', sans-serif;
+		font-size: 20px;
+		color:#fae0e4;
+		margin: 0
 		}
 		
 		#reg {
 		font-family: 'Kdam Thmor Pro', sans-serif;
-		font-size: 30px;
+		font-size: 25px;
 		color:#f7cad0;
 		}
-		
-		/* Style for disabled buttons */
-		#register_btn:disabled,
-		#start_btn:disabled,
-		#cancel:disabled,
-		
+				
 		#sign_up:disabled {
 			color: #ecf0f1;
 			cursor: not-allowed;
-		}
-		#sign_up{
-		border-radius:0px;
+			border-radius:0px;
 			height:60px;
 			width:150px;
 		}
 		
-		#sign_up:hover{
+		#sign_up{
+			height:60px;
+			width:150px;
+		}
+		
+		#sign_up:not(:disabled):hover {
 			transition: ease-in-out 0.3s;
-			border-radius:60px;
+			border-radius: 60px;
+			background-color: #ff99ac;
+			height:70px;
+			width:150px;
+		}
+		
+		/* Style for disabled buttons */		
+		#register_btn:disabled,
+		#start_btn:disabled,
+		#cancel:disabled{
+			color: #242424;
+			cursor: not-allowed;
+			height:30px;
+			width:100px;
+		}
+		
+		#register_btn{
+			height:30px;
+			width:100px;
+		}
+		
+		#register_btn:not(:disabled):hover {
+			transition: ease-in-out 0.3s;
+			border-radius: 60px;
 			background-color: #ff99ac;
 		}
 		
-		#register_btn:disabled {
-			
-			cursor: not-allowed;
-		}
-		#register_btn{
-		border-radius:0px;
-			height:30px;
-			width:100px;
-			color: #242424;
-		}
-		
-		#register_btn:hover{
-			transition: ease-in-out 0.3s;
-			border-radius:60px;
-			background-color: #242424;
-		}
-		
-		#start_btn:disabled {
-			color: #242424;
-			cursor: not-allowed;
-		}
-		
 		#start_btn{
-		border-radius:0px;
 			height:30px;
 			width:100px;
-			color: #242424;
 		}
 		
-		#start_btn:hover{
+		#start_btn:not(:disabled):hover {
 			transition: ease-in-out 0.3s;
-			border-radius:60px;
-			background-color: #333;
+			border-radius: 60px;
+			background-color: #1eb7bc;
 		}
 
 		#cancel{
@@ -124,7 +129,8 @@
 <body>
 
 <h1 id="welcome"> Welcome to the Multiplication Playground</h1>
-<h3 id="reg">You need to register to play and save your scores!</h3>
+<p id="workout"> Exercise your brain muscles!</p>
+<p id="reg">You need to register to play and save your scores!</p>
 <button type="button" id="sign_up"> Sign Me Up </button>
 
     <div id="registrationContainer" class="registrationContainer">
@@ -169,7 +175,6 @@
 					</th>
 					<td>
 						<select id="usergender" name="usergender" required>
-						  <option value="blank"> </option>
 						  <option value="male">Male</option>
 						  <option value="female">Female</option>
 						  <option value="other">Other</option>
@@ -190,7 +195,7 @@
         <br>
             <!--<input type="submit" value="submit" id="submit">-->
 			<button type="button" id="register_btn" disabled>Register</button> &nbsp; &nbsp;
-			<button type="button" id="start_btn" onclick="PlayGame()"> Start </button>
+			<button type="button" id="start_btn" onclick="PlayGame()"> Start </button> &nbsp; &nbsp;
 			<button type="button" id="cancel">Cancel</button>
         </form>
 	</div>
@@ -207,6 +212,12 @@
 			registrationContainer.style.display = "block"; // Show the registration form
 			signUpButton.disabled = true; // Disable Sign Me Up button
             cancelButton.disabled = false; // Enable Cancel button
+		});
+		
+		// Add event listener for email input to check for a valid email format
+		document.getElementById("usermail").addEventListener("input", function () {
+			checkFormCompletion();
+			validateEmail(); // Call the email validation function
 		});
 		
 		// Event listener when the Cancel button is clicked, it hides the registration form
@@ -234,33 +245,50 @@
 		if (today.getMonth() < dob.getMonth() || (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())) {
 		  age--; //Determining if the users birth month has past in the curret year
 		  // Update the age in the sessionStorage		
-		}		
+		}
+		
 		document.getElementById("userage").value = age; //Displays the age result in the input field in the registration box
 		
 		sessionStorage.setItem('age', age);
 		console.log("Age in sessionStorage:", sessionStorage.getItem('age'));
-	  });
+	  });	  
 	  
-	  
-	  
-	  //grouping variables for buttons in one place		
+
 		let reg_btn = document.getElementById("register_btn"); //register button variable thats takes the id of the register button
 		let start_btn = document.getElementById("start_btn"); //start button variable thats takes the id of the start button			
 		
 		//Setting the initial state for relevant buttons					
 		start_btn.disabled= true; //start button is disabled until register is clicked			
 		
-		
+		function validateEmail() {
+			let emailInput = document.getElementById("usermail");
+			const email = emailInput.value;
+
+			const emailRegex = /^[^\s@]+@gmail\.com$/i; // Only allow Gmail addresses
+			if (!emailRegex.test(email) || email.length < 1) { 
+				emailInput.setCustomValidity("Please enter a valid Gmail address.");
+			} else {
+				emailInput.setCustomValidity(""); // Clear the custom validation message
+			}
+			checkFormCompletion();
+		}
+
 		//checkFormCompletion details and function
 		checkFormCompletion(); // Check if all relevant form details are filled
 		function checkFormCompletion() {
+		let firstNameInput = document.getElementById("fname");
+        let lastNameInput = document.getElementById("lname");
+		let emailInput = document.getElementById("usermail");
+		
 			if (			
+				firstNameInput.value.length >= 3 &&
+				lastNameInput.value.length >= 3 &&
 				document.getElementById("fname").value &&
 				document.getElementById("lname").value &&
 				document.getElementById("dob").value &&
-				document.getElementById("userage").value &&
 				document.getElementById("usergender").value &&
-				document.getElementById("usermail").value
+				document.getElementById("userage").value &&
+				emailInput.checkValidity() // Check for a valid email
 			) {					
 				reg_btn.disabled = false; // Enable the Register button if all fields are filled in
 			} else {				
@@ -273,27 +301,9 @@
 		document.getElementById("dob").addEventListener("input", checkFormCompletion); //Even listener to capture user's DOB from the registration form
 		document.getElementById("userage").addEventListener("input", checkFormCompletion); //Even listener to capture user's age from the registration form
 		document.getElementById("usergender").addEventListener("input", checkFormCompletion); //Even listener to capture user's gender from the registration form
-		document.getElementById("usermail").addEventListener("input", checkFormCompletion); //Even listener to capture user's email from the registration form
+		document.getElementById("usermail").addEventListener("input", validateEmail); //Even listener to capture user's email from the registration form
 		
-		// Add event listener for email input to check for a valid email format
-		document.getElementById("usermail").addEventListener("input", function () {
-			checkFormCompletion();
-			validateEmail(); // Call the email validation function
-		});
 		
-		// Function to validate the email format
-		function validateEmail() {
-			const emailInput = document.getElementById("usermail");
-			const email = emailInput.value;
-
-			// Use a regular expression to check if the email has a valid format
-			const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-			if (!emailRegex.test(email)) {
-				emailInput.setCustomValidity("Please enter a valid email address.");
-			} else {
-				emailInput.setCustomValidity(""); // Clear the custom validation message
-			}
-		}
 		
 		reg_btn.addEventListener("click", function() { //Evenlistener for the register button. Activates when the register button is clicked by the user
 			if (
@@ -303,31 +313,44 @@
 				document.getElementById("userage").value &&
 				document.getElementById("usergender").value &&
 				document.getElementById("usermail").value
+				
 			) {
-				// Store the player's name
-				playerName = `${document.getElementById("fname").value} ${document.getElementById("lname").value}`; //Combining user's first and last name and assigning it to the playerName variable
+			
+				// Call the Register function only if all necessary fields are filled
+				Register();
+				
+				// Check if the age is within the allowed range (8 to 12)
+				if (age >= 8 && age <= 12) {
+								
+					// Store the player's name
+					playerName = `${document.getElementById("fname").value} ${document.getElementById("lname").value}`; //Combining user's first and last name and assigning it to the playerName variable
 
-				reg_btn.disabled = false; // Enable Register button
+					reg_btn.disabled = false; // Enable Register button
+					
+					// Disable the registration form
+					document.getElementById("fname").disabled = true;
+					document.getElementById("lname").disabled = true;
+					document.getElementById("dob").disabled = true;
+					document.getElementById("userage").disabled = true;
+					document.getElementById("usergender").disabled = true;
+					document.getElementById("usermail").disabled = true;
+					
+					alert('YOU ARE REGISTERED! You can now click Start.'); //alert to inform the user that they are now registered
+					
+					// Store player's name in sessionStorage
+					sessionStorage.setItem('playerName', playerName);
+					sessionStorage.setItem('usergender', usergender);
+					start_btn.disabled = false; //Enables the Start button after the register button is clicked.
 				
-				// Disable the registration form
-				document.getElementById("fname").disabled = true;
-				document.getElementById("lname").disabled = true;
-				document.getElementById("dob").disabled = true;
-				document.getElementById("userage").disabled = true;
-				document.getElementById("usergender").disabled = true;
-				document.getElementById("usermail").disabled = true;
-				
-				alert('YOU ARE REGISTERED! You can now click Start.'); //alert to inform the user that they are now registered
-				
-				// Store player's name in sessionStorage
-				sessionStorage.setItem('playerName', playerName);
+				} else {
+					alert('You need to be between 8 and 12 years old to play. Please enter a valid age.');
+				}
 			} else {
 				alert('Please fill out all form elements before registering.'); //Informs the user that they need to fill in the registration form in order to register
 			}
 							
 			reg_btn.disabled = true; // Disable the Register button after it is clicked by the user
-			start_btn.disabled = false; //Enables the Start button after the register button is clicked.
-			
+
 		});
 					
 		let PlayerRegistrationData = []; //declaring the PlayerRegistrationData array
@@ -347,18 +370,17 @@
 				
 		
 		function Register(){ //register function that takes the user's inputed data and store then in the declared variables
+			
 			firstname = document.getElementById("fname").value; 
 			lastname = document.getElementById("lname").value;
 			date_of_birth = document.getElementById("dob").value;
 			age = document.getElementById("userage").value;
 			gender = document.getElementById("usergender").value;
 			email = document.getElementById("usermail").value;
-						
+		
 			playerName = `${firstname} ${lastname}`; // Store the player's name in the playerName variable
 			
-			PlayerRegistrationData.push(firstname,lastname,date_of_birth,age,gender,email, 0, 0, 0); //stores the user's data in the array along with placeholders for percentage score, question, answer, and status
-			console.log(PlayerRegistrationData); //Used to track and debug the data being store din the PlayerRegistrationData
-						
+					
 		}
 		
 		function PlayGame() {

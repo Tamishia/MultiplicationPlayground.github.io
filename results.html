@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<link href="https://fonts.googleapis.com/css2?family=Kdam+Thmor+Pro&display=swap" rel="stylesheet">
     <title>Game - Results</title>
@@ -51,27 +51,54 @@
 <body>
 	<div id="resultsArea">
 		<button id="stats" type="button" onclick="goBack()">Back to Main</button>
-		<h1>Results for <span id="player-name"> </span></h1>
+		<h1>Game Results <span id="player-name"> </span></h1>
 		
 		<h3><span id="currentlyPlaying"></span> Overall Stats</h3>
 
 			<textarea id="showpercentage" rows="6" cols="50" readonly></textarea>
+			<br>
+			
+			<!-- Add a div to display the charts -->
+			<div id="showcharts"></div>
 	</div>
 	
 <script>
+	let PlayerRegistrationData = [];
+	
+	console.log('Player Registration Data:', PlayerRegistrationData);
+	
 	// Declare playerName in the global scope
 	var playerName;
+	var age;
+	var usergender;
+	var currentScore;
 	
+	function loadDataFromLocalStorage() {
+		const storedData = localStorage.getItem('PlayerRegistrationData');
+		if (storedData) {
+			PlayerRegistrationData = JSON.parse(storedData);
+			console.log('Loaded data from Local Storage:', PlayerRegistrationData);
+			
+			const currentPlayer = PlayerRegistrationData[PlayerRegistrationData.length - 1]; // Assuming the last player is the current player
+
+        if (currentPlayer) {
+            playerName = currentPlayer.playerName;
+			
+			}
+		}
+	}
 	document.addEventListener("DOMContentLoaded", function () {
-        // Retrieve player's name from sessionStorage
-        playerName = sessionStorage.getItem('playerName');
+        loadDataFromLocalStorage();
 
         // Update player's name in the HTML content
         document.getElementById('currentlyPlaying').innerText = playerName;
 		
 		// Call FindPercentageScore function on page load - after redirected from the END button
         findPercentageScore();
-		});
+		
+		 // Call showCharts function with the retrieved data
+		showCharts();
+	});
 		
 		// Function to go back to the main game page
         function goBack() {
@@ -98,8 +125,120 @@
 			// Display overall stats in the textarea
 			const overallStats = `Username: ${playerName}\nDate: ${formattedDate}\nScore: ${currentPercentageScore}%\nTotal Questions: ${totalQuestions}\nCorrect Answers: ${tally}\nIncorrect Equations: ${incorrect}`;
 			showPercentageTextArea.value = overallStats;
-    
         }
+		
+	function showCharts() {		
+		const totalPlayers = PlayerRegistrationData.length;
+		console.log('Total Players:', totalPlayers);
+		
+		// Count gender frequencies
+		let femaleCount = 0;
+		let maleCount = 0;
+
+		// Count percentage score frequencies
+		let scoreLess50 = 0;
+		let score50to59 = 0;
+		let score60to69 = 0;
+		let score70to79 = 0;
+		let score80to89 = 0;
+		let score90to99 = 0;
+		let score100 = 0;
+
+		for (const entry of PlayerRegistrationData) {
+			// Count gender frequencies
+			if (entry.gender === 'female') {
+				femaleCount++;
+			} else if (entry.gender === 'male') {
+				maleCount++;
+			}
+
+			// Count percentage score frequencies
+			const percentageScore = entry.currentScore;
+			if (percentageScore < 50) {
+				scoreLess50++;
+			} else if (percentageScore >= 50 && percentageScore <= 59) {
+				score50to59++;
+			} else if (percentageScore >= 60 && percentageScore <= 69) {
+				score60to69++;
+			} else if (percentageScore >= 70 && percentageScore <= 79) {
+				score70to79++;
+			} else if (percentageScore >= 80 && percentageScore <= 89) {
+				score80to89++;
+			} else if (percentageScore >= 90 && percentageScore <= 99) {
+				score90to99++;
+			} else if (percentageScore === 100) {
+				score100++;
+			}
+		}
+		
+		// Log gender counts to the console
+		console.log('Female Count:', femaleCount);
+		console.log('Male Count:', maleCount);
+
+		// Calculate percentages
+		const femalePercentage = (femaleCount / totalPlayers) * 100;
+		const malePercentage = (maleCount / totalPlayers) * 100;
+		
+		 // Log gender percentages to the console
+		console.log('Female Percentage:', femalePercentage);
+		console.log('Male Percentage:', malePercentage);
+
+		// Create HTML for gender bar chart
+		const genderChartHTML = `
+			<div>
+				Female: <img src="pink.png" height="20" width="${femalePercentage}" alt="${femalePercentage}%">
+			</div>
+			<div>
+				Male: <img src="blue.png" height="20" width="${malePercentage}" alt="${malePercentage}%">
+				<br>
+				<br>
+			</div>
+		`;
+		
+		// Calculate total percentage score frequencies
+		const totalScoreFrequencies = scoreLess50 + score50to59 + score60to69 + score70to79 + score80to89 + score90to99 + score100;
+
+		// Calculate percentages for each score range
+		const scoreLess50Percentage = (scoreLess50 / totalScoreFrequencies) * 100;
+		const score50to59Percentage = (score50to59 / totalScoreFrequencies) * 100;
+		const score60to69Percentage = (score60to69 / totalScoreFrequencies) * 100;
+		const score70to79Percentage = (score70to79 / totalScoreFrequencies) * 100;
+		const score80to89Percentage = (score80to89 / totalScoreFrequencies) * 100;
+		const score90to99Percentage = (score90to99 / totalScoreFrequencies) * 100;
+		const score100Percentage = (score100 / totalScoreFrequencies) * 100;
+
+		// Create HTML for percentage score bar chart
+		const percentageScoreChartHTML = `
+			<div>
+				< 50: <img src="brown.png" height="20" width="${scoreLess50Percentage}" alt="${scoreLess50Percentage}%">
+			</div>
+			<div>
+				50-59: <img src="red.png" height="20" width="${score50to59Percentage}" alt="${score50to59Percentage}%">
+			</div>
+			<div>
+				60-69: <img src="orange.png" height="20" width="${score60to69Percentage}" alt="${score60to69Percentage}%">
+			</div>
+			<div>
+				70-79: <img src="yellow.png" height="20" width="${score70to79Percentage}" alt="${score70to79Percentage}%">
+			</div>
+			<div>
+				80-89: <img src="tan.png" height="20" width="${score80to89Percentage}" alt="${score80to89Percentage}%">
+			</div>
+			<div>
+				90-99: <img src="purple.png" height="20" width="${score90to99Percentage}" alt="${score90to99Percentage}%">
+			</div>
+			<div>
+				100: <img src="green.png" height="20" width="${score100Percentage}" alt="${score100Percentage}%">
+			</div>
+		`;
+
+		// Display charts in the 'showcharts' div
+		const showChartsDiv = document.getElementById('showcharts');
+		showChartsDiv.innerHTML = genderChartHTML + percentageScoreChartHTML;		
+	}
+
+	// Call showCharts every 5 seconds
+	setInterval(showCharts, 5000);
 
 </script>
 </body>
